@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Bank Management System</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="background-container"></div>
+    
+    <!-- Toast Notification System -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <div id="app-container">
+        <!-- Login Page -->
+        <section id="login-section" class="page-section active">
+            <div class="glass-card login-card">
+                <div class="logo-container">
+                    <div class="blood-drop"></div>
+                    <h1>Blood Bank</h1>
+                    <p class="subtitle">Management System</p>
+                </div>
+                <form id="login-form">
+                    <div class="input-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" required placeholder="e.g. admin or john">
+                    </div>
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required placeholder="Enter password">
+                    </div>
+                    <button type="submit" class="btn-primary">Sign In</button>
+                </form>
+                <div class="login-hints">
+                    <div class="hint-box">
+                        <strong>🔑 Quick Credentials:</strong>
+                        <div class="hint-pills">
+                            <span class="hint-pill" onclick="fillLogin('admin', 'admin')">Admin Mode: admin / admin</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Admin Dashboard -->
+        <section id="admin-section" class="page-section">
+            <nav class="glass-nav">
+                <div class="nav-brand">
+                    <div class="mini-drop"></div>
+                    Blood Bank <span class="badge badge-admin">Admin Portal</span>
+                </div>
+                <div class="nav-actions">
+                    <span id="admin-user-greeting" class="user-greeting">Welcome, Admin</span>
+                    <button class="btn-secondary" id="admin-logout-btn">Logout</button>
+                </div>
+            </nav>
+            <main class="dashboard-content">
+                <!-- Stats Row -->
+                <div class="stats-grid">
+                    <div class="glass-card stat-card">
+                        <div class="stat-icon red">🩸</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Total Donors</span>
+                            <h3 id="stat-total-donors">0</h3>
+                        </div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-icon green">📦</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Total Units</span>
+                            <h3 id="stat-total-units">0</h3>
+                        </div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-icon orange">⚠️</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Critical Stock Alerts</span>
+                            <h3 id="stat-critical-alerts">0</h3>
+                        </div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-icon purple">🚨</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Pending Requests</span>
+                            <h3 id="stat-pending-requests">0</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-header">
+                    <h2>Donor Management & Inventory</h2>
+                    <div class="header-buttons">
+                        <button class="btn-primary" id="add-donor-btn">+ Add New Donor</button>
+                    </div>
+                </div>
+
+                <!-- Search & Filters -->
+                <div class="glass-card filter-container">
+                    <div class="search-box">
+                        <input type="text" id="admin-search-input" placeholder="🔍 Search by donor name, phone, or city..." onkeyup="filterAdminDonors()">
+                    </div>
+                    <div class="filter-pills" id="admin-blood-filters">
+                        <button class="filter-btn active" onclick="setAdminBloodFilter('ALL')">All Groups</button>
+                        <button class="filter-btn" onclick="setAdminBloodFilter('A+')">A+</button>
+                        <button class="filter-btn" onclick="setAdminBloodFilter('A-')">A-</button>
+                        <button class="filter-btn" onclick="setAdminBloodFilter('B+')">B+</button>
+                        <button class="filter-btn" onclick="setAdminBloodFilter('B-')">B-</button>
+                        <button class="filter-btn" onclick="setAdminBloodFilter('AB+')">AB+</button>
+                        <button class="filter-btn" onclick="setAdminBloodFilter('AB-')">AB-</button>
+                        <button class="filter-btn" onclick="setAdminBloodFilter('O+')">O+</button>
+                        <button class="filter-btn" onclick="setAdminBloodFilter('O-')">O-</button>
+                    </div>
+                </div>
+                
+                <!-- Chart Area -->
+                <div class="glass-card chart-container">
+                    <div class="chart-header">
+                        <h3>Donors Distribution & Stock Level</h3>
+                        <span class="chart-subtitle">Real-time units per blood group</span>
+                    </div>
+                    <div id="donors-chart" class="chart-bars">
+                        <!-- Chart generated via JS -->
+                    </div>
+                </div>
+
+                <!-- Donors Table -->
+                <div class="glass-card table-container">
+                    <div class="table-header">
+                        <h3>Registered Donors List</h3>
+                        <span id="admin-donor-count-badge" class="count-badge">0 Donors</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Age</th>
+                                <th>Gender</th>
+                                <th>Blood Group</th>
+                                <th>City / Location</th>
+                                <th>Phone</th>
+                                <th>Reg. Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-donors-body">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Emergency Blood Requests Section -->
+                <div class="glass-card table-container requests-section">
+                    <div class="table-header">
+                        <h3>🚨 Urgent Blood Requests</h3>
+                        <span id="admin-request-count-badge" class="count-badge warning">0 Pending</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Patient Name</th>
+                                <th>Blood Needed</th>
+                                <th>Units</th>
+                                <th>Hospital</th>
+                                <th>Contact Phone</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-requests-body">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </section>
+
+        <!-- User Dashboard -->
+        <section id="user-section" class="page-section">
+            <nav class="glass-nav">
+                <div class="nav-brand">
+                    <div class="mini-drop"></div>
+                    Blood Bank <span class="badge badge-user">User Portal</span>
+                </div>
+                <div class="nav-actions">
+                    <span id="user-greeting" class="user-greeting">Welcome, User</span>
+                    <button class="btn-secondary" id="user-logout-btn">Logout</button>
+                </div>
+            </nav>
+            <main class="dashboard-content">
+                <div class="dashboard-header">
+                    <div>
+                        <h2>Donor Directory & Assistance</h2>
+                        <p class="section-desc">Search for available donors or submit an emergency request for blood.</p>
+                    </div>
+                    <div class="header-buttons">
+                        <button class="btn-secondary" onclick="openRequestModal()">🚨 Request Blood</button>
+                        <button class="btn-primary" onclick="openModal('add')" style="width: auto;">+ Register as Donor</button>
+                    </div>
+                </div>
+
+                <!-- Search & Filters for User -->
+                <div class="glass-card filter-container">
+                    <div class="search-box">
+                        <input type="text" id="user-search-input" placeholder="🔍 Search donors by name, city, or blood group..." onkeyup="filterUserDonors()">
+                    </div>
+                    <div class="filter-pills" id="user-blood-filters">
+                        <button class="filter-btn active" onclick="setUserBloodFilter('ALL')">All Groups</button>
+                        <button class="filter-btn" onclick="setUserBloodFilter('A+')">A+</button>
+                        <button class="filter-btn" onclick="setUserBloodFilter('A-')">A-</button>
+                        <button class="filter-btn" onclick="setUserBloodFilter('B+')">B+</button>
+                        <button class="filter-btn" onclick="setUserBloodFilter('B-')">B-</button>
+                        <button class="filter-btn" onclick="setUserBloodFilter('AB+')">AB+</button>
+                        <button class="filter-btn" onclick="setUserBloodFilter('AB-')">AB-</button>
+                        <button class="filter-btn" onclick="setUserBloodFilter('O+')">O+</button>
+                        <button class="filter-btn" onclick="setUserBloodFilter('O-')">O-</button>
+                    </div>
+                </div>
+                
+                <!-- Donors List -->
+                <div class="glass-card table-container">
+                    <div class="table-header">
+                        <h3>Available Donors</h3>
+                        <span id="user-donor-count-badge" class="count-badge">0 Donors</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Age</th>
+                                <th>Gender</th>
+                                <th>Blood Group</th>
+                                <th>City / Location</th>
+                                <th>Phone</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-donors-body">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- User Active Blood Requests -->
+                <div class="glass-card table-container requests-section">
+                    <div class="table-header">
+                        <h3>Recent Emergency Requests</h3>
+                        <button class="btn-small" onclick="openRequestModal()">+ New Request</button>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Patient Name</th>
+                                <th>Blood Needed</th>
+                                <th>Units</th>
+                                <th>Hospital</th>
+                                <th>Contact</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-requests-body">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </section>
+    </div>
+
+    <!-- Add/Edit Donor Modal -->
+    <div id="donor-modal" class="modal-overlay">
+        <div class="glass-card modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Add Donor</h3>
+                <button class="close-btn" id="close-modal-btn">&times;</button>
+            </div>
+            <form id="donor-form">
+                <input type="hidden" id="donor-id">
+                <div class="input-group">
+                    <label for="donor-name">Full Name</label>
+                    <input type="text" id="donor-name" required placeholder="e.g. Alex Morgan">
+                </div>
+                <div class="input-group-row">
+                    <div class="input-group">
+                        <label for="donor-age">Age</label>
+                        <input type="number" id="donor-age" required min="18" max="65" placeholder="18-65">
+                    </div>
+                    <div class="input-group">
+                        <label for="donor-gender">Gender</label>
+                        <select id="donor-gender" required>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="donor-blood-group">Blood Group</label>
+                        <select id="donor-blood-group" required>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group-row">
+                    <div class="input-group">
+                        <label for="donor-city">City / Location</label>
+                        <input type="text" id="donor-city" required placeholder="e.g. New York, Chicago">
+                    </div>
+                    <div class="input-group">
+                        <label for="donor-phone">Phone Number</label>
+                        <input type="tel" id="donor-phone" required placeholder="10-digit number" pattern="[0-9]{10}">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancel-donor-btn">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Donor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Emergency Blood Request Modal -->
+    <div id="request-modal" class="modal-overlay">
+        <div class="glass-card modal-content">
+            <div class="modal-header">
+                <h3>🚨 Request Urgent Blood</h3>
+                <button class="close-btn" onclick="closeRequestModal()">&times;</button>
+            </div>
+            <form id="request-form">
+                <div class="input-group">
+                    <label for="req-patient-name">Patient Name</label>
+                    <input type="text" id="req-patient-name" required placeholder="e.g. David Miller">
+                </div>
+                <div class="input-group-row">
+                    <div class="input-group">
+                        <label for="req-blood-group">Blood Group Needed</label>
+                        <select id="req-blood-group" required>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="req-units">Units Required</label>
+                        <input type="number" id="req-units" min="1" max="10" value="1" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="req-hospital">Hospital Name & City</label>
+                    <input type="text" id="req-hospital" required placeholder="e.g. City General Hospital, Central Wing">
+                </div>
+                <div class="input-group">
+                    <label for="req-phone">Contact Phone Number</label>
+                    <input type="tel" id="req-phone" required placeholder="10-digit mobile number" pattern="[0-9]{10}">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeRequestModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Submit Urgent Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
